@@ -1,4 +1,5 @@
-// import Phaser from 'phaser'
+const countdownTime = 5000
+const restoreTime   = 700
 
 export default class CountdownTimer {
   constructor(game, cb) {
@@ -17,7 +18,7 @@ export default class CountdownTimer {
   start() {
     let timerTween = game.add
       .tween(this.sprite)
-      .to({ width: 0 }, 5000, "Linear")
+      .to({ width: 0 }, countdownTime, "Linear")
     timerTween.onComplete.add(() => {
       this.cb()
       this.restore()
@@ -27,7 +28,7 @@ export default class CountdownTimer {
   restore() {
     let timerTween = game.add
       .tween(this.sprite)
-      .to({ width: game.width }, 700, Phaser.Easing.Quintic.Out)
+      .to({ width: game.width }, restoreTime, Phaser.Easing.Quintic.Out)
     timerTween.start()
   }
 

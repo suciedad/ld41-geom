@@ -5,6 +5,7 @@ import Board from '../classes/Board';
 import Player from '../classes/Player';
 import Enemy from '../classes/Enemy';
 import CountdownTimer from '../classes/Timer';
+import ActionManager from '../classes/ActionManager';
 
 export default class extends Phaser.State {
   init() { }
@@ -19,9 +20,9 @@ export default class extends Phaser.State {
 
     const enemyBoard = new Board(this.game, 4, "enemy")
     const enemy = new Enemy(game, enemyBoard, {
-      attack:  10,
-      defence: 10,
-      heal:    10,
+      attack:  2,
+      defence: 2,
+      heal:    2,
       goldDrop: 3
     })
     enemyBoard.fill()
@@ -29,22 +30,13 @@ export default class extends Phaser.State {
     let gameTurn = () => {
       playerBoard.disableClickControl()
 
-      let action = player.board.createAction()
-      console.warn(action)
-      if (action.type === 'attack') {
-        let damageValue = player.abils.attack * action.power
-        enemy.damage(damageValue)
-        console.log(`Hit enemy with ${damageValue} damage`);
-      }
-      if (action.type === 'shield') {
-        player.shield = player.abils.defence * action.power
-        console.log(`Defence with ${player.shield} shield`);
-      }
-      if (action.type === 'heal') {
-        let healValue = player.abils.heal * action.power
-        player.heal(healValue)
-        console.log(`Restore ${healValue} HP`);
-      }
+      enemy.board.makeDecision()
+
+      let playerAct = player.board.createAction()
+      let enemyAct = enemy.board.createAction()
+
+      let playerActionManager = new ActionManager(game, playerAct, player, enemy)
+      let enemyActionManager = new ActionManager(game, enemyAct, enemy, player)
 
       player.board.selectedChips.forEach(chip => {
         player.board.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
@@ -57,9 +49,6 @@ export default class extends Phaser.State {
 
     const timer = new CountdownTimer(game, gameTurn);
     timer.start()
-
-    // setTimeout(gameTurn, 5000)
-    // setInterval(gameTurn, 5000)
 
   }
 

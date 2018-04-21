@@ -12,9 +12,9 @@ export default class Player {
     this._credits = 0
 
     this.abils = {
-      attack:  10,
-      defence: 10,
-      heal:    10
+      attack:  2,
+      defence: 2,
+      heal:    2
     }
   }
 

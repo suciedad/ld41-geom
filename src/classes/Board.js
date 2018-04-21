@@ -1,6 +1,4 @@
-// import config from './config';
 import { generateType } from '../utils'
-// import * as PIXI from 'pixi.js';
 import Chip from './Chip'
 
 export default class Board {
@@ -28,9 +26,6 @@ export default class Board {
 
     // Board picture
     // this.imageBg = game.add.image(this.boardPosition.x, this.boardPosition.y, 'board')
-    // console.warn(this.boardPosition.x, this.boardPosition.y)
-
-    // game.stage.addChild(fieldBgImage);
   }
 
   get chips() {
@@ -189,4 +184,60 @@ export default class Board {
   //     chip.shake();
   //   }
   // }
+
+
+
+
+
+  // For enemies
+  makeDecision() {
+    let createGroupsForDecision = () => {
+      let groups = {
+        "green-triangle": 0,
+        "green-square": 0,
+        "blue-triangle": 0,
+        "blue-square": 0,
+        "red-triangle": 0,
+        "red-square": 0
+      }
+
+      this.chips.forEach(chip => {
+        groups[chip.type] += 1
+      })
+
+      for (let typeName in groups) {
+        if (groups[typeName] < 2) {
+          delete groups[typeName]
+        }
+      }
+
+      return groups
+    }
+
+    let groups = createGroupsForDecision()
+    let arr = Object.values(groups)
+    let min = Math.min(...arr)
+    let max = Math.max(...arr)
+
+    let choosedType
+    for (let typeName in groups) {
+      if (groups[typeName] == min) {
+        choosedType = typeName
+        break
+      }
+    }
+
+    this.chips.forEach(chip => {
+      if (chip.type == choosedType) {
+        this.selectedChips.push(chip)
+      }
+    })
+
+    console.warn(this.selectedChips);
+
+  }
+
+
+
+
 };

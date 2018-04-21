@@ -17,5 +17,9 @@ export default class Enemy {
     this.hp.current = this.hp.current - damageValue
     this.hp.changeHpSpriteWidth()
   }
+  heal(healValue) {
+    this.hp.current = this.hp.current + healValue
+    this.hp.changeHpSpriteWidth()
+  }
 
 };
