@@ -21,7 +21,7 @@ export default class CountdownTimer {
       .to({ width: 0 }, countdownTime, "Linear")
     timerTween.onComplete.add(() => {
       this.cb()
-      this.restore()
+      // this.restore()
     }, this)
     timerTween.start()
   }
@@ -29,6 +29,11 @@ export default class CountdownTimer {
     let timerTween = game.add
       .tween(this.sprite)
       .to({ width: game.width }, restoreTime, Phaser.Easing.Quintic.Out)
+
+    timerTween.onComplete.add(() => {
+      this.start()
+    }, this)
+
     timerTween.start()
   }
 

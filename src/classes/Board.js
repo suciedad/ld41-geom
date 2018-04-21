@@ -12,6 +12,8 @@ export default class Board {
     this.size = size
     this.pixelSize = size * (cellSize+11)
 
+    this.promises = []
+
     if (forWho === "player") {
       this.boardPosition = {
         x: this.game.width / 2 - this.pixelSize / 2,
@@ -30,6 +32,9 @@ export default class Board {
 
   get chips() {
     return this._chips
+  }
+  set chips(arr) {
+    this._chips = arr
   }
 
   _createChip(x, y) {

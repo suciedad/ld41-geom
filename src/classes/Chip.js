@@ -1,12 +1,8 @@
-// import config from './config';
-// import { randomInt, generateId } from './utils.js';
-// import * as PIXI from 'pixi.js';
-// import Sound from 'pixi-sound';
-// import tween from 'pixi-tween';
+import { generateId } from '../utils.js';
 
 export default class Chip {
   constructor(game, type, x, y) {
-    // this._id = generateId();
+    this._id = generateId();
     this._type = type;
     this._isSelected = false;
     this.game = game;
@@ -23,9 +19,9 @@ export default class Chip {
     this.board.addToSelected(this)
   }
 
-  // get id() {
-  //   return this._id;
-  // }
+  get id() {
+    return this._id;
+  }
 
   // set type(value) {
   //   return this._type = value;
@@ -64,10 +60,24 @@ export default class Chip {
   fly() {
     const tweenTime = 1000
     const unitePosition = { x: game.world.centerX, y: game.world.centerY+50 }
+
     let flyTween = game
       .add
       .tween(this.sprite)
       .to(unitePosition, tweenTime, "Quart.easeOut");
+
+    // Without promise
+    // flyTween.onComplete.add(this.hide, this)
+
+    // With promise
+    let promise = new Promise((resolve) => {
+      flyTween.onComplete.add(() => {
+        resolve()
+        this.hide()
+      }, this)
+    })
+
+    this.board.promises.push(promise)
     flyTween.start()
   }
 
@@ -79,6 +89,10 @@ export default class Chip {
     //   .from(0)
     //   .to(1, tweenTime, "Quart.easeOut");
     // showTween.start()
+  }
+  hide() {
+    this.sprite.destroy()
+    console.warn(this.board.selectedChips, "<<--- dsleflgsdnlgfhkfksgarl");
   }
   // shake() {
   //   // Tween animation

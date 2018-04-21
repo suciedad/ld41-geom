@@ -19,4 +19,12 @@ const generateType = () => {
   return `${randColor}-${randShape}`
 }
 
-export { centerGameObjects, generateType }
+// Generate new global id (used for chips)
+const newId = () => {
+  let count = 0;
+
+  return () => { return count++ };
+}
+let generateId = newId();
+
+export { centerGameObjects, generateType, generateId }
