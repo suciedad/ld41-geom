@@ -2,10 +2,10 @@ import { generateId } from '../utils.js';
 
 export default class Chip {
   constructor(game, type, x, y) {
-    this._id = generateId();
-    this._type = type;
-    this._isSelected = false;
-    this.game = game;
+    this._id = generateId()
+    this._type = type
+    this._isSelected = false
+    this.game = game
 
     // Chip image
     this.sprite = game.add.sprite(x, y, type);
@@ -15,8 +15,10 @@ export default class Chip {
   }
 
   _clickHandler() {
-    this.select()
-    this.board.addToSelected(this)
+    if (!this.isSelected) {
+      this.select()
+      this.board.addToSelected(this)
+    }
   }
 
   get id() {
@@ -30,36 +32,25 @@ export default class Chip {
     return this._type;
   }
 
-  // set isSelected(val) {
-  //   return this._isSelected = val;
-  // }
-  // get isSelected() {
-  //   return this._isSelected;
-  // }
-
-  // _clickHandler() {
-  //   let checker = this.field.checker
-  //   if (this.isSelected) {
-  //     this.unselect();
-  //     checker.remove(this);
-  //   } else {
-  //     this.select();
-  //     checker.add(this);
-  //   }
-  // }
+  set isSelected(val) {
+    return this._isSelected = val
+  }
+  get isSelected() {
+    return this._isSelected
+  }
 
   select() {
-    this.isSelected = true;
-    this.sprite.scale.setTo(1.2, 1.2);
+    this.isSelected = true
+    this.sprite.scale.setTo(1.2, 1.2)
   }
   unselect() {
-    this.isSelected = false;
-    this.sprite.scale.setTo(1, 1);
+    this.isSelected = false
+    this.sprite.scale.setTo(1, 1)
   }
 
   fly() {
     const tweenTime = 1000
-    const unitePosition = { x: game.world.centerX, y: game.world.centerY+50 }
+    const unitePosition = { x: game.world.centerX, y: game.world.centerY }
 
     let flyTween = game
       .add
@@ -76,8 +67,7 @@ export default class Chip {
         this.hide()
       }, this)
     })
-
-    this.board.promises.push(promise)
+    this.game.promises.push(promise)
     flyTween.start()
   }
 
@@ -92,7 +82,6 @@ export default class Chip {
   }
   hide() {
     this.sprite.destroy()
-    console.warn(this.board.selectedChips, "<<--- dsleflgsdnlgfhkfksgarl");
   }
   // shake() {
   //   // Tween animation

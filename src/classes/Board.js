@@ -2,24 +2,23 @@ import { generateType } from '../utils'
 import Chip from './Chip'
 
 export default class Board {
-  constructor(game, size, forWho = "player") {
+  constructor(game, size, owner = "player") {
     const cellSize = 50
 
     this._chips = []
     this.selectedChips = []
     this.toCreatePositions = []
     this.game = game
+    this.owner = owner
     this.size = size
     this.pixelSize = size * (cellSize+11)
 
-    this.promises = []
-
-    if (forWho === "player") {
+    if (owner === "player") {
       this.boardPosition = {
         x: this.game.width / 2 - this.pixelSize / 2,
         y: this.game.height - this.pixelSize - 50
       }
-    } else if (forWho === "enemy") {
+    } else if (owner === "enemy") {
       this.boardPosition = {
         x: this.game.width / 2 - this.pixelSize / 2,
         y: cellSize + 50
@@ -38,7 +37,12 @@ export default class Board {
   }
 
   _createChip(x, y) {
-    let chip = new Chip(this.game, generateType(), x, y)
+    let chip
+    if (this.owner === "enemy") {
+      chip = new Chip(this.game, generateType(['red', 'blue']), x, y)
+    } else {
+      chip = new Chip(this.game, generateType(), x, y)
+    }
     chip.board = this
 
     return chip;
@@ -91,6 +95,7 @@ export default class Board {
     //   1) Attack - red
     //   2) Shield - blue
     //   3) Heal   - green
+    //   4) Gold   - yellow
     let takeType = () => {
       let actionType
       let coreElement = this.selectedChips[0]
@@ -103,6 +108,8 @@ export default class Board {
         actionType = 'shield'
       } else if (actionColor === 'green') {
         actionType = 'heal'
+      } else if (actionColor === 'yellow') {
+        actionType = 'gold'
       }
 
       return actionType;
@@ -112,11 +119,15 @@ export default class Board {
       return this.selectedChips.length
     }
 
-    if (this.selectedChips.length > 0) {
+    if (this.selectedChips.length > 1) {
       let type  = takeType()
       let power = takePower()
       console.warn(`${type} with x${power} power!`);
       return {type: type, power: power}
+    } else if (this.selectedChips.length === 1) {
+      this._clearSelected()
+      console.warn('no action with one chip :(');
+      return false
     } else {
       console.warn('no action :(');
       return false
@@ -237,8 +248,6 @@ export default class Board {
         this.selectedChips.push(chip)
       }
     })
-
-    console.warn(this.selectedChips);
 
   }
 

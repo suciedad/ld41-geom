@@ -1,6 +1,3 @@
-// import config from './config';
-// import { randomInt, generateId } from './utils.js';
-
 const HpSpriteWidth = 500
 
 export default class HP {
@@ -9,13 +6,21 @@ export default class HP {
     this._max = value
     this._current = value
 
-    // this._sprite = game.add.sprite(x, y, 'hp');
     this._sprite = game.add.tileSprite(
       game.world.centerX,
       posY,
       HpSpriteWidth, 30, 'hp'
     )
     this._sprite.anchor.setTo(0.5);
+
+    let hpText = `${this._current} / ${this._max}`
+    this._text = game.add.text(game.world.centerX, posY, hpText, {
+      font: '25px Bangers',
+      fill: '#ffffff',
+      smoothed: false
+    })
+    // this._text.padding.set(10, 16)
+    this._text.anchor.setTo(0.5)
   }
 
   get max() {
@@ -27,14 +32,17 @@ export default class HP {
   set current(value) {
     if (value > this._max) {
       this._current = this._max
+    } else if (value < 0) {
+      this._current = 0
     } else {
       this._current = value
     }
   }
 
   changeHpSpriteWidth() {
+    this._text.text = `${this._current} / ${this._max}`
+
     let newWidth = HpSpriteWidth / this.max * this.current
-    console.warn(newWidth)
 
     let hpWidthTween = game
       .add

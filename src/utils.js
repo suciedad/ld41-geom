@@ -4,18 +4,26 @@ const centerGameObjects = (objects) => {
   })
 }
 
-const generateType = () => {
+const generateType = (possibleColors) => {
   const randomEl = (array) => {
     let randomIndex = Math.floor(Math.random() * ((array.length-1) + 1));
     return array[randomIndex];
   }
 
-  const colorsDictionary = ['red', 'blue', 'green']
-  const shapesDictionary = ['triangle', 'square']
+  let colorsDictionary
+  if (possibleColors === undefined) {
+    colorsDictionary = ['red', 'blue', 'green', 'yellow']
+  } else {
+    colorsDictionary = possibleColors
+  }
+  let shapesDictionary = ['triangle', 'square']
 
   let randColor = randomEl(colorsDictionary)
   let randShape = randomEl(shapesDictionary)
 
+  if (randColor === 'yellow') {
+    return `yellow-gold`
+  }
   return `${randColor}-${randShape}`
 }
 

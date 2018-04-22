@@ -17,6 +17,8 @@ export default class extends Phaser.State {
     this.load.image('board',    'assets/images/board.png')
     this.load.image('hp',       'assets/images/hp_sprite.png')
     this.load.image('timer',    'assets/images/timer_sprite.png')
+    this.load.image('overlay',  'assets/images/overlay.png')
+    this.load.image('shopBg',   'assets/images/shopBg.png')
     // triangles
     this.load.image('red-triangle',   'assets/images/red-triangle.png')
     this.load.image('blue-triangle',  'assets/images/blue-triangle.png')
@@ -25,6 +27,8 @@ export default class extends Phaser.State {
     this.load.image('red-square',   'assets/images/red-square.png')
     this.load.image('blue-square',  'assets/images/blue-square.png')
     this.load.image('green-square', 'assets/images/green-square.png')
+    // gold
+    this.load.image('yellow-gold', 'assets/images/yellow-gold.png')
   }
 
   create () {

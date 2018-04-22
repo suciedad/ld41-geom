@@ -1,7 +1,5 @@
 import HP from "./HP";
-
-// import config from './config';
-// import { randomInt, generateId } from './utils.js';
+import FinalMessage from "./FinalMessage";
 
 export default class Player {
   constructor(game, board) {
@@ -9,20 +7,20 @@ export default class Player {
     this.board = board
     this.hp = new HP(game, 100, game.height - 30 - 10)
     this._shield = 0
-    this._credits = 0
+    this._gold = 0
 
     this.abils = {
-      attack:  2,
-      defence: 2,
-      heal:    2
+      attack:  15,
+      defence: 1,
+      heal:    1
     }
   }
 
-  get credits() {
-    return this._credits
+  get gold() {
+    return this._gold
   }
-  set credits(value) {
-    this._credits = value
+  set gold(value) {
+    this._gold = value
   }
 
   get shield() {
@@ -35,10 +33,22 @@ export default class Player {
   damage(damageValue) {
     this.hp.current = this.hp.current - damageValue
     this.hp.changeHpSpriteWidth()
+    if (this.hp.current === 0) {
+      this.game.isEnd = true
+      const message = new FinalMessage(this.game, "defeated")
+      message.show()
+    }
   }
   heal(healValue) {
     this.hp.current = this.hp.current + healValue
     this.hp.changeHpSpriteWidth()
+  }
+  restoreHp() {
+    this.hp.current = this.hp.max
+    this.hp.changeHpSpriteWidth()
+  }
+  gainGold(goldValue) {
+    this.gold += goldValue
   }
 
 };
