@@ -35,7 +35,9 @@ export default class Enemy {
   }
 
   animationDeath(cb) {
-    console.warn("enemy death");
+    console.warn("enemy death")
+    this.board.destroy()
+    this.hp.destroy()
     // let deathTween = game.add
     //   .tween(this.board)
     //   .to({ alpha: 0 }, 1000, "Quart.easeOut")

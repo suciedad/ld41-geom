@@ -41,10 +41,18 @@ export default class Chip {
 
   select() {
     this.isSelected = true
+    // let _y = this.sprite.position.y
+    // let tween = game.add.tween(this.sprite)
+    //   .to({y: _y - 5}, 300, "Quart.easeOut");
+    // tween.start()
     this.sprite.scale.setTo(1.2, 1.2)
   }
   unselect() {
     this.isSelected = false
+    // let _y = this.sprite.position.y
+    // let tween = game.add.tween(this.sprite)
+    //   .to({ y: _y + 5 }, 300, "Quart.easeOut");
+    // tween.start()
     this.sprite.scale.setTo(1, 1)
   }
 
@@ -81,6 +89,19 @@ export default class Chip {
     // showTween.start()
   }
   hide() {
+    this.sprite.destroy()
+  }
+  boom() {
+    let _x = this.sprite.position.x
+    let _y = this.sprite.position.y
+
+    let emitter = this.game.add.emitter(_x, _y, 100);
+    emitter.makeParticles(this.type);
+    emitter.gravity = 0;
+    emitter.minParticleScale = 0.15;
+    emitter.maxParticleScale = 0.30;
+    emitter.start(true, 1500, null, 10);
+
     this.sprite.destroy()
   }
   // shake() {

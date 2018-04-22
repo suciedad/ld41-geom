@@ -163,6 +163,12 @@ export default class Board {
     })
   }
 
+  destroy() {
+    this.chips.forEach(chip => {
+      chip.boom()
+    })
+  }
+
   // hint() {
   //   let arr = []
 

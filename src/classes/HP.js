@@ -6,6 +6,13 @@ export default class HP {
     this._max = value
     this._current = value
 
+    // HP line
+    this._spriteBg = game.add.tileSprite(
+      game.world.centerX,
+      posY,
+      HpSpriteWidth, 30, 'hpbg'
+    )
+    this._spriteBg.anchor.setTo(0.5);
     this._sprite = game.add.tileSprite(
       game.world.centerX,
       posY,
@@ -51,6 +58,23 @@ export default class HP {
     hpWidthTween.start()
 
     // this._sprite.width = HpSpriteWidth / this.max * this.current
+  }
+
+  destroy() {
+    let hpAway = game.add
+      .tween(this._sprite)
+      .to({ y: -20 }, 1500, "Quart.easeOut")
+    hpAway.start()
+
+    let hpBgAway = game.add
+      .tween(this._spriteBg)
+      .to({ y: -20 }, 1500, "Quart.easeOut")
+    hpBgAway.start()
+
+    let textAway = game.add
+      .tween(this._text)
+      .to({ y: -20 }, 1500, "Quart.easeOut")
+    textAway.start()
   }
 
 };
