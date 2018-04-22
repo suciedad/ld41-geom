@@ -3,25 +3,51 @@ import Chip from './Chip'
 
 export default class Board {
   constructor(game, size, owner = "player") {
-    const cellSize = 50
-
+    const cellSize = 35
+    this.cellSize = cellSize
     this._chips = []
     this.selectedChips = []
     this.toCreatePositions = []
     this.game = game
     this.owner = owner
     this.size = size
-    this.pixelSize = size * (cellSize+11)
+    this.padding = 8
+    this.pixelSize = (cellSize + this.padding * 2) * size
+    console.warn(this.pixelSize)
 
     if (owner === "player") {
       this.boardPosition = {
-        x: this.game.width / 2 - this.pixelSize / 2,
-        y: this.game.height - this.pixelSize - 50
+        x: game.world.centerX - this.pixelSize / 2,
+        y: this.game.height - this.pixelSize - 75
+      }
+      this.defencePoint = {
+        x: game.world.centerX,
+        y: game.world.centerY + 100
+      }
+      this.atkPoint = {
+        x: game.world.centerX,
+        y: 0
+      }
+      this.healPoint = {
+        x: game.world.centerX,
+        y: game.height
       }
     } else if (owner === "enemy") {
       this.boardPosition = {
-        x: this.game.width / 2 - this.pixelSize / 2,
-        y: cellSize + 50
+        x: game.world.centerX - this.pixelSize / 2,
+        y: 75
+      }
+      this.atkPoint = {
+        x: game.world.centerX,
+        y: game.height
+      }
+      this.defencePoint = {
+        x: game.world.centerX,
+        y: game.world.centerY - 100
+      }
+      this.healPoint = {
+        x: game.world.centerX,
+        y: 0
       }
     }
 
@@ -53,13 +79,19 @@ export default class Board {
   // }
   // Fill game field with chips
   fill() {
-    let startPosition = { x: this.boardPosition.x, y: this.boardPosition.y }
+    let startPosition = {
+      x: this.boardPosition.x + this.padding + this.cellSize / 2,
+      y: this.boardPosition.y + this.padding + this.cellSize / 2
+    }
     for (let i = 0; i < this.size; i++) {
-      let prevChip = this._createChip(startPosition.x, (45+22) * i + startPosition.y)
+      let prevChip = this._createChip(
+        startPosition.x,
+        (this.cellSize + this.padding * 2) * i + startPosition.y
+      )
       this.chips.push(prevChip)
       for (let j = 0; j < this.size-1; j++) {
         let chip = this._createChip(0, 0)
-        chip.sprite.alignTo(prevChip.sprite, Phaser.RIGHT_CENTER, 22)
+        chip.sprite.alignTo(prevChip.sprite, Phaser.RIGHT_CENTER, (this.padding * 2))
         this.chips.push(chip)
         prevChip = chip
       }
@@ -206,6 +238,72 @@ export default class Board {
   //     chip.shake();
   //   }
   // }
+
+
+  useAnimation(type, cb) {
+    console.warn(type);
+    let promises = []
+
+    if (type === undefined) {
+      Promise.all(promises)
+        .then(cb)
+    }
+
+    if (type === "attack") {
+
+      this.selectedChips.forEach(chip => {
+        this.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
+        chip.upToAtk(promises)
+      })
+      Promise.all(promises)
+        .then(() => {
+            this.game.camera.shake(0.01, 300)
+            cb()
+          }
+        )
+
+    } else if (type === "shield") {
+
+      this.selectedChips.forEach(chip => {
+        this.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
+        chip.flyToDef(promises)
+      })
+      Promise.all(promises)
+        .then(cb)
+
+    } else if (type === "heal") {
+
+      this.selectedChips.forEach(chip => {
+        this.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
+        chip.flyToHeal(promises)
+      })
+      Promise.all(promises)
+        .then(cb)
+
+    } else if(type === "gold") {
+
+      this.selectedChips.forEach(chip => {
+        this.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
+        chip.hideForGold(promises)
+      })
+      Promise.all(promises)
+        .then(() => {
+            let coinSprite = game.add.sprite(game.world.centerX, -20, "yellow-gold");
+            coinSprite.anchor.set(0.5)
+
+            let coinFlyTween = game.add.tween(coinSprite)
+              .to({ y: game.height }, 1500, "Linear");
+
+            coinFlyTween.onComplete.add(() => {
+              coinSprite.destroy()
+              cb()
+            })
+
+            coinFlyTween.start()
+          }
+        )
+    }
+  }
 
 
 

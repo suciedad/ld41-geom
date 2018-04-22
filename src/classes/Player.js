@@ -10,8 +10,8 @@ export default class Player {
     this._gold = 0
 
     this.abils = {
-      attack:  15,
-      defence: 1,
+      attack:  3,
+      defence: 2,
       heal:    1
     }
   }

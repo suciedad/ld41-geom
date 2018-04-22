@@ -35,7 +35,6 @@ export default class Enemy {
   }
 
   animationDeath(cb) {
-    console.warn("enemy death")
     this.board.destroy()
     this.hp.destroy()
     // let deathTween = game.add

@@ -42,7 +42,38 @@ export default class extends Phaser.State {
       }
     }
 
-    let flyChips = (person) => {
+    const priorites = {
+      attack: 1,
+      shield: 2,
+      heal: 0,
+      gold: 3
+    }
+
+    const parallelAnims = (type1, type2, cb) => {
+      let promises = []
+
+      let ps1 = new Promise((resolve) => {
+        player.board.useAnimation(type1, resolve)
+      })
+      promises.push(ps1)
+      
+      let ps2 = new Promise((resolve) => {
+        game.enemy.board.useAnimation(type2, resolve)
+      })
+      promises.push(ps2)
+
+      Promise.all(promises)
+        .then(cb)
+    }
+    const queueAnims = (type1, p1, type2, p2, cb) => {
+      p1.board.useAnimation(type1, () => {
+        p2.board.useAnimation(type2, () => {
+          cb()
+        })
+      })
+    }
+
+    let removeFromBoard = (person) => {
       person.board.selectedChips.forEach(chip => {
         // Remove chip from board.chips
         person.board.chips.forEach((el, index) => {
@@ -50,14 +81,18 @@ export default class extends Phaser.State {
             person.board.chips[index] = undefined
           }
         })
-
-        person.board.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
-        chip.fly()
       })
       // Remove undefined from board.chips
       person.board.chips = person.board.chips.filter(el => el !== undefined)
     }
+    let afterAnimation = (playerAct, enemyAct) => {
+      let actionManager = new ActionManager(game, player, playerAct, game.enemy, enemyAct)
 
+      removeFromBoard(player)
+      removeFromBoard(game.enemy)
+
+      clearAll()
+    }
     let gameTurn = () => {
       playerBoard.disableClickControl()
 
@@ -65,19 +100,31 @@ export default class extends Phaser.State {
 
       let playerAct = player.board.createAction()
       let enemyAct = game.enemy.board.createAction()
-      let actionManager = new ActionManager(game, player, playerAct, game.enemy, enemyAct)
+      console.warn(playerAct, enemyAct);
 
-      // Old manager
-      // let playerActionManager = new ActionManager(game, playerAct, player, game.enemy)
-      // let enemyActionManager = new ActionManager(game, enemyAct, game.enemy, player)
-      game.camera.shake(0.01, 300);
-      flyChips(player)
-      flyChips(game.enemy)
-
-      player.board.chips = player.board.chips.filter(el => el !== undefined)
-
-      Promise.all(game.promises)
-        .then(clearAll)
+      // console.warn(priorites[playerAct.type], priorites[enemyAct.type]);
+      if (priorites[playerAct.type] === undefined) {
+        game.enemy.board.useAnimation(enemyAct.type, () => {
+          afterAnimation(playerAct, enemyAct)
+        })
+      } else if (priorites[enemyAct.type] === undefined) {
+        player.board.useAnimation(playerAct.type, () => {
+          afterAnimation(playerAct, enemyAct)
+        })
+      }
+      if (priorites[playerAct.type] === priorites[enemyAct.type]) {
+        parallelAnims(playerAct.type, enemyAct.type, () => {
+          afterAnimation(playerAct, enemyAct)
+        })
+      } else if (priorites[playerAct.type] > priorites[enemyAct.type]) {
+        queueAnims(playerAct.type, player, enemyAct.type, game.enemy, () => {
+          afterAnimation(playerAct, enemyAct)
+        })
+      } else if (priorites[playerAct.type] < priorites[enemyAct.type]) {
+        queueAnims(enemyAct.type, game.enemy, playerAct.type, player, () => {
+          afterAnimation(playerAct, enemyAct)
+        })
+      }
     }
 
     game.restart = () => {

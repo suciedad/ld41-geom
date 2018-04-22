@@ -9,6 +9,7 @@ export default class Chip {
 
     // Chip image
     this.sprite = game.add.sprite(x, y, type);
+    // this.sprite = game.add.tileSprite(x, y, 35, 35, type)
     this.sprite.anchor.set(0.5)
 
     // this.show();
@@ -45,7 +46,7 @@ export default class Chip {
     // let tween = game.add.tween(this.sprite)
     //   .to({y: _y - 5}, 300, "Quart.easeOut");
     // tween.start()
-    this.sprite.scale.setTo(1.2, 1.2)
+    this.sprite.scale.setTo(1.3, 1.3)
   }
   unselect() {
     this.isSelected = false
@@ -77,6 +78,72 @@ export default class Chip {
     })
     this.game.promises.push(promise)
     flyTween.start()
+  }
+
+  flyToDef(promises) {
+    const tweenTime = 1000
+
+    let flyTween = game.add.tween(this.sprite)
+      .to(this.board.defencePoint, tweenTime, "Quart.easeIn");
+
+    let promise = new Promise((resolve) => {
+      flyTween.onComplete.add(() => {
+        this.boom()
+        resolve()
+      }, this)
+    })
+    promises.push(promise)
+
+    flyTween.start()
+  }
+  flyToHeal(promises) {
+    const tweenTime = 1000
+
+    let flyTween = game.add.tween(this.sprite)
+      .to(this.board.healPoint, tweenTime, "Quart.easeIn");
+
+    let promise = new Promise((resolve) => {
+      flyTween.onComplete.add(() => {
+        this.boom()
+        resolve()
+      }, this)
+    })
+    promises.push(promise)
+
+    flyTween.start()
+  }
+  upToAtk(promises) {
+    const tweenTime = 500
+
+    let upTween = game.add.tween(this.sprite)
+      // .to({y: this.sprite.position.y - 10}, tweenTime, "Quart.easeOut");
+      .to(this.board.atkPoint, tweenTime, "Quart.easeIn");
+
+    let promise = new Promise((resolve) => {
+      upTween.onComplete.add(() => {
+        this.boom()
+        resolve()
+      }, this)
+    })
+    promises.push(promise)
+
+    upTween.start()
+  }
+  hideForGold(promises) {
+    const tweenTime = 500
+
+    let hideTween = game.add.tween(this.sprite)
+      .to({alpha: 0}, tweenTime, "Linear");
+
+    let promise = new Promise((resolve) => {
+      hideTween.onComplete.add(() => {
+        this.sprite.destroy()
+        resolve()
+      }, this)
+    })
+    promises.push(promise)
+
+    hideTween.start()
   }
 
   show() {
