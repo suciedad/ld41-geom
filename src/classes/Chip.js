@@ -84,27 +84,43 @@ export default class Chip {
     const tweenTime = 1000
 
     let flyTween = game.add.tween(this.sprite)
-      .to(this.board.defencePoint, tweenTime, "Quart.easeIn");
+      .to({
+        x: this.board.defencePoint.x,
+        y: this.board.defencePoint.y,
+        alpha: 0.4
+      }, tweenTime, "Quart.easeIn");
+
+    let increaseTween = game.add.tween(this.sprite.scale)
+      .to({
+        x: 7,
+        y: 7
+      }, tweenTime, "Quart.easeIn");
 
     let promise = new Promise((resolve) => {
       flyTween.onComplete.add(() => {
-        this.boom()
+        // this.boom()
         resolve()
       }, this)
     })
     promises.push(promise)
 
+    increaseTween.start()
     flyTween.start()
   }
   flyToHeal(promises) {
     const tweenTime = 1000
 
     let flyTween = game.add.tween(this.sprite)
-      .to(this.board.healPoint, tweenTime, "Quart.easeIn");
+      .to(
+        {
+          x: this.board.healPoint.x,
+          y: this.board.healPoint.y,
+          alpha: 0.2
+        }, tweenTime, "Quart.easeIn");
 
     let promise = new Promise((resolve) => {
       flyTween.onComplete.add(() => {
-        this.boom()
+        this.hide()
         resolve()
       }, this)
     })
@@ -171,62 +187,15 @@ export default class Chip {
 
     this.sprite.destroy()
   }
-  // shake() {
-  //   // Tween animation
-  //   let tween = PIXI.tweenManager.createTween(this.container);
-  //   tween.easing = PIXI.tween.Easing.linear();
-  //   //  kill tween when complete
-  //   tween.expire = true;
-  //   tween.from({
-  //     rotation: 0
-  //   });
-  //   tween.to({
-  //     rotation: PIXI.DEG_TO_RAD * 20
-  //   });
-  //   tween.pingPong = true;
-  //   tween.time = config.chipAnimationTime.shake;
-  //   tween.on('end', () => {
-  //     tween.stop();
-  //   });
-  //   tween.start();
-  // }
-  // show() {
-  //   // Tween animation
-  //   let tween = PIXI.tweenManager.createTween(this.container);
-  //   tween.time = config.chipAnimationTime.show;
-  //   tween.easing = PIXI.tween.Easing.outBack();
-  //   //  kill tween when complete
-  //   tween.expire = true;
-  //   tween.from({
-  //     scale: { x: 0, y: 0 }
-  //   });
-  //   tween.to({
-  //     scale: { x: 1, y: 1 }
-  //   });
-  //   tween.on('end', () => {
-  //     this.container.on('pointerdown', () => {
-  //       this._clickHandler(this);
-  //     });
-  //   });
-  //   tween.start();
-  // }
-  // hide(cb) {
-  //   // Tween animation
-  //   let tween = PIXI.tweenManager.createTween(this.container);
-  //   tween.time = config.chipAnimationTime.hide;
-  //   tween.easing = PIXI.tween.Easing.outCirc();
-  //   //  kill tween when complete
-  //   tween.expire = true;
-  //   tween.from({
-  //     scale: { x: 1, y: 1 }
-  //   });
-  //   tween.to({
-  //     scale: { x: 0, y: 0 }
-  //   });
-  //   tween.on('end', () => {
-  //     this.container.destroy();
-  //     cb();
-  //   });
-  //   tween.start();
-  // }
+  fadeBoom() {
+    let tween = game.add.tween(this.sprite)
+      .to({ alpha: 0, scale: 1.5 }, 500, "Linear");
+
+    tween.onComplete.add(() => {
+      this.sprite.destroy()
+    })
+
+    tween.start()
+
+  }
 };

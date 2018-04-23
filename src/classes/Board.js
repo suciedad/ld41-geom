@@ -1,28 +1,32 @@
 import { generateType } from '../utils'
 import Chip from './Chip'
+import Baloon from './Baloon';
 
 export default class Board {
-  constructor(game, size, owner = "player") {
+  constructor(game, size, owner, forWho = "player", posColors) {
     const cellSize = 35
     this.cellSize = cellSize
     this._chips = []
     this.selectedChips = []
     this.toCreatePositions = []
+    this.shieldChips = []
     this.game = game
     this.owner = owner
+    this.forWho = forWho
     this.size = size
     this.padding = 8
     this.pixelSize = (cellSize + this.padding * 2) * size
-    console.warn(this.pixelSize)
+    this.posColors = posColors
 
-    if (owner === "player") {
+
+    if (forWho === "player") {
       this.boardPosition = {
         x: game.world.centerX - this.pixelSize / 2,
         y: this.game.height - this.pixelSize - 75
       }
       this.defencePoint = {
         x: game.world.centerX,
-        y: game.world.centerY + 100
+        y: game.height - (this.pixelSize / 2 + 75)
       }
       this.atkPoint = {
         x: game.world.centerX,
@@ -30,9 +34,9 @@ export default class Board {
       }
       this.healPoint = {
         x: game.world.centerX,
-        y: game.height
+        y: game.height - 50
       }
-    } else if (owner === "enemy") {
+    } else if (forWho === "enemy") {
       this.boardPosition = {
         x: game.world.centerX - this.pixelSize / 2,
         y: 75
@@ -43,16 +47,14 @@ export default class Board {
       }
       this.defencePoint = {
         x: game.world.centerX,
-        y: game.world.centerY - 100
+        y: this.pixelSize / 2 + 75
       }
       this.healPoint = {
         x: game.world.centerX,
-        y: 0
+        y: 50
       }
     }
 
-    // Board picture
-    // this.imageBg = game.add.image(this.boardPosition.x, this.boardPosition.y, 'board')
   }
 
   get chips() {
@@ -64,8 +66,8 @@ export default class Board {
 
   _createChip(x, y) {
     let chip
-    if (this.owner === "enemy") {
-      chip = new Chip(this.game, generateType(['red', 'blue']), x, y)
+    if (this.forWho === "enemy") {
+      chip = new Chip(this.game, generateType(this.posColors), x, y)
     } else {
       chip = new Chip(this.game, generateType(), x, y)
     }
@@ -74,9 +76,6 @@ export default class Board {
     return chip;
   }
 
-  // handleConcurrences(chipsToRemove) {
-    
-  // }
   // Fill game field with chips
   fill() {
     let startPosition = {
@@ -154,14 +153,11 @@ export default class Board {
     if (this.selectedChips.length > 1) {
       let type  = takeType()
       let power = takePower()
-      console.warn(`${type} with x${power} power!`);
       return {type: type, power: power}
     } else if (this.selectedChips.length === 1) {
       this._clearSelected()
-      console.warn('no action with one chip :(');
       return false
     } else {
-      console.warn('no action :(');
       return false
     }
 
@@ -201,47 +197,7 @@ export default class Board {
     })
   }
 
-  // hint() {
-  //   let arr = []
-
-  //   let makeChunks = (array) => {
-  //     let result = [];
-  //     let uniqValues = [];
-
-  //     for (let i = 0; i < array.length; i++) {
-  //       const value = array[i].value;
-  //       if (uniqValues.indexOf(value) < 0) {
-  //         uniqValues.push(value);
-  //       }
-  //     }
-
-  //     for (let i = 0; i < uniqValues.length; i++) {
-  //       const uniqValue = uniqValues[i];
-  //       let chunk = array.filter((el) => {
-  //         return el.value === uniqValue;
-  //       });
-  //       result.push(chunk);
-  //     }
-
-  //     return result;
-  //   }
-
-  //   // sort in asc
-  //   arr = this.chips.sort((a, b) => { return a.value - b.value });
-  //   // split to groups by value
-  //   arr = makeChunks(arr);
-  //   // remove too small
-  //   arr = arr.filter((chunk) => { return chunk.length >= config.chipsToCheckCount; });
-  //   let randomChunk = getRandomElement(arr);
-  //   for (let i = 0; i < config.chipsToCheckCount; i++) {
-  //     const chip = randomChunk[i];
-  //     chip.shake();
-  //   }
-  // }
-
-
-  useAnimation(type, cb) {
-    console.warn(type);
+  useAnimation(type, power, cb) {
     let promises = []
 
     if (type === undefined) {
@@ -258,18 +214,58 @@ export default class Board {
       Promise.all(promises)
         .then(() => {
             this.game.camera.shake(0.01, 300)
+            let damageValue = this.owner.abils.attack * power
+
+            let target
+            let _x
+            let _y
+            if (this.forWho === "enemy") {
+              target = this.game.player
+              _x = game.world.centerX + 150
+              _y = this.game.height - 100
+            } else if (this.forWho === "player") {
+              target = this.game.enemy
+              _x = game.world.centerX + 150
+              _y = 100
+            }
+
+            if (target.shield > 0) {
+              damageValue -= target.shield
+              if (damageValue < 0) damageValue = 0
+            }
+            target.damage(damageValue)
+
+            let baloon = new Baloon(this.game, "dmg", damageValue, _x, _y)
+            baloon.show()
             cb()
           }
         )
 
     } else if (type === "shield") {
 
+      let _x
+      let _y
+      if (this.forWho === "enemy") {
+        _x = game.world.centerX
+        _y = game.world.centerY - 100
+      } else if (this.forWho === "player") {
+        _x = game.world.centerX
+        _y = game.world.centerY + 100
+      }
       this.selectedChips.forEach(chip => {
         this.toCreatePositions.push({ x: chip.sprite.position.x, y: chip.sprite.position.y })
         chip.flyToDef(promises)
+        this.shieldChips.push(chip)
       })
       Promise.all(promises)
-        .then(cb)
+        .then(() => {
+          this.owner.shield = this.owner.abils.defence * power
+
+          let baloon = new Baloon(this.game, "shield", this.owner.shield, _x, _y)
+          baloon.show()
+
+          cb()
+        })
 
     } else if (type === "heal") {
 
@@ -278,7 +274,24 @@ export default class Board {
         chip.flyToHeal(promises)
       })
       Promise.all(promises)
-        .then(cb)
+        .then(() => {
+          let healValue = this.owner.abils.heal * power
+          this.owner.heal(healValue)
+
+          let _x
+          let _y
+          if (this.forWho === "enemy") {
+            _x = game.world.centerX + 150
+            _y = 100
+          } else if (this.forWho === "player") {
+            _x = game.world.centerX + 150
+            _y = this.game.height - 100
+          }
+          let baloon = new Baloon(this.game, "heal", healValue, _x, _y)
+          baloon.show()
+
+          cb()
+        })
 
     } else if(type === "gold") {
 
@@ -291,11 +304,21 @@ export default class Board {
             let coinSprite = game.add.sprite(game.world.centerX, -20, "yellow-gold");
             coinSprite.anchor.set(0.5)
 
+            let target = this.game.enemy
+            let _x = game.world.centerX + 150
+            let _y = this.game.height - 100
+
             let coinFlyTween = game.add.tween(coinSprite)
-              .to({ y: game.height }, 1500, "Linear");
+              .to({ y: game.height }, 1000, "Linear");
 
             coinFlyTween.onComplete.add(() => {
               coinSprite.destroy()
+              let gainedGold = target.abils.goldDrop * power
+              this.owner.gainGold(gainedGold)
+
+              let baloon = new Baloon(this.game, "gold", gainedGold, _x, _y)
+              baloon.show()
+
               cb()
             })
 
@@ -305,12 +328,29 @@ export default class Board {
     }
   }
 
+  destroyShield() {
+    let _x = this.shieldChips[0].sprite.position.x
+    let _y = this.shieldChips[0].sprite.position.y
 
+    let emitter = this.game.add.emitter(_x, _y, 100)
+    emitter.makeParticles("blue-triangle")
+    emitter.gravity = 0
+    emitter.minParticleScale = 1
+    emitter.maxParticleScale = 1
+    emitter.setAlpha(0.3, 0.3)
+    emitter.start(true, 1500, null, 15)
 
-
+    this.shieldChips.forEach(chip => {
+      chip.sprite.destroy()
+    })
+  }
 
   // For enemies
   makeDecision() {
+    let isDumb        = () => { return this.owner.abils.AI === "dumb"}
+    let isSmart       = () => { return this.owner.abils.AI === "smart"}
+    let isMasterpiece = () => { return this.owner.abils.AI === "masterpiece"}
+
     let createGroupsForDecision = () => {
       let groups = {
         "green-triangle": 0,
@@ -340,10 +380,28 @@ export default class Board {
     let max = Math.max(...arr)
 
     let choosedType
-    for (let typeName in groups) {
-      if (groups[typeName] == min) {
-        choosedType = typeName
-        break
+    if (isDumb()) {
+      for (let typeName in groups) {
+        if (groups[typeName] == min) {
+          choosedType = typeName
+          break
+        }
+      }
+    }
+    if (isSmart()) {
+      for (let typeName in groups) {
+        if ((groups[typeName] > min) && (groups[typeName] <= max)) {
+          choosedType = typeName
+          break
+        }
+      }
+    }
+    if (isMasterpiece()) {
+      for (let typeName in groups) {
+        if (groups[typeName] === max) {
+          choosedType = typeName
+          break
+        }
       }
     }
 
@@ -354,8 +412,5 @@ export default class Board {
     })
 
   }
-
-
-
 
 };

@@ -33,6 +33,9 @@ export default class HP {
   get max() {
     return this._max
   }
+  set max(value) {
+    this._max = value
+  }
   get current() {
     return this._current
   }
@@ -56,8 +59,6 @@ export default class HP {
       .tween(this._sprite)
       .to({width: newWidth}, 1000, "Quart.easeOut")
     hpWidthTween.start()
-
-    // this._sprite.width = HpSpriteWidth / this.max * this.current
   }
 
   destroy() {

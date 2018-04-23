@@ -20,6 +20,8 @@ export default class extends Phaser.State {
     this.load.image('timer',    'assets/images/timer_sprite.png')
     this.load.image('overlay',  'assets/images/overlay.png')
     this.load.image('shopBg',   'assets/images/shopBg.png')
+    this.load.image('plus',     'assets/images/plus.png')
+    this.load.image('go',       'assets/images/go.png')
     // triangles
     this.load.image('red-triangle',   'assets/images/red-triangle.png')
     this.load.image('blue-triangle',  'assets/images/blue-triangle.png')

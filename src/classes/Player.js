@@ -5,7 +5,7 @@ export default class Player {
   constructor(game, board) {
     this.game = game
     this.board = board
-    this.hp = new HP(game, 100, game.height - 30 - 10)
+    this.hp = new HP(game, 25, game.height - 30 - 10)
     this._shield = 0
     this._gold = 0
 
@@ -35,6 +35,7 @@ export default class Player {
     this.hp.changeHpSpriteWidth()
     if (this.hp.current === 0) {
       this.game.isEnd = true
+      console.warn("GAME IS END!");
       const message = new FinalMessage(this.game, "defeated")
       message.show()
     }

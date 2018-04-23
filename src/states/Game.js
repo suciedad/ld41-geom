@@ -1,11 +1,9 @@
 /* globals __DEV__ */
 import Phaser from 'phaser'
-import Mushroom from '../sprites/Mushroom'
 import Board from '../classes/Board';
 import Player from '../classes/Player';
 import Enemy from '../classes/Enemy';
 import CountdownTimer from '../classes/Timer';
-import ActionManager from '../classes/ActionManager';
 import Shop from '../classes/Shop';
 import enemies from '../enemies';
 
@@ -19,8 +17,9 @@ export default class extends Phaser.State {
 
     let createEnemy = (index) => {
       let enemyStats = enemiesList[index]
-      let enemyBoard = new Board(this.game, enemyStats.boardSize, "enemy")
+      let enemyBoard = new Board(this.game, enemyStats.boardSize, undefined, "enemy", enemyStats.posColors)
       let enemy = new Enemy(game, enemyBoard, enemyStats.hp, enemyStats.abils)
+      enemyBoard.owner = enemy
       enemyBoard.fill()
 
       return enemy
@@ -34,6 +33,8 @@ export default class extends Phaser.State {
       player.shield     = 0
       game.enemy.shield = 0
 
+      console.warn(game.isEnd);
+      // game.isEnd = true
       if (!game.isEnd) {
         game.enemy.board.restoreChips()
         player.board.restoreChips()
@@ -49,25 +50,25 @@ export default class extends Phaser.State {
       gold: 3
     }
 
-    const parallelAnims = (type1, type2, cb) => {
+    const parallelAnims = (type1, pow1, type2, pow2, cb) => {
       let promises = []
 
       let ps1 = new Promise((resolve) => {
-        player.board.useAnimation(type1, resolve)
+        player.board.useAnimation(type1, pow1, resolve)
       })
       promises.push(ps1)
       
       let ps2 = new Promise((resolve) => {
-        game.enemy.board.useAnimation(type2, resolve)
+        game.enemy.board.useAnimation(type2, pow2, resolve)
       })
       promises.push(ps2)
 
       Promise.all(promises)
         .then(cb)
     }
-    const queueAnims = (type1, p1, type2, p2, cb) => {
-      p1.board.useAnimation(type1, () => {
-        p2.board.useAnimation(type2, () => {
+    const queueAnims = (type1, pow1, p1, type2, pow2, p2, cb) => {
+      p1.board.useAnimation(type1, pow1, () => {
+        p2.board.useAnimation(type2, pow2, () => {
           cb()
         })
       })
@@ -86,12 +87,29 @@ export default class extends Phaser.State {
       person.board.chips = person.board.chips.filter(el => el !== undefined)
     }
     let afterAnimation = (playerAct, enemyAct) => {
-      let actionManager = new ActionManager(game, player, playerAct, game.enemy, enemyAct)
 
-      removeFromBoard(player)
-      removeFromBoard(game.enemy)
+      // let delay
+      // if (player.board.shieldChips.length || game.enemy.board.shieldChips.length) {
+      //   delay = 1000
+      // } else {
+      //   delay = 0
+      // }
+      setTimeout(() => {
+        if (player.board.shieldChips.length) {
+          player.board.destroyShield()
+          player.board.shieldChips = []
+        }
+        if (game.enemy.board.shieldChips.length) {
+          game.enemy.board.destroyShield()
+          game.enemy.board.shieldChips = []
+        }
 
-      clearAll()
+        removeFromBoard(player)
+        removeFromBoard(game.enemy)
+
+        clearAll()
+      }, 1500)
+      
     }
     let gameTurn = () => {
       playerBoard.disableClickControl()
@@ -100,28 +118,26 @@ export default class extends Phaser.State {
 
       let playerAct = player.board.createAction()
       let enemyAct = game.enemy.board.createAction()
-      console.warn(playerAct, enemyAct);
 
-      // console.warn(priorites[playerAct.type], priorites[enemyAct.type]);
       if (priorites[playerAct.type] === undefined) {
-        game.enemy.board.useAnimation(enemyAct.type, () => {
+        game.enemy.board.useAnimation(enemyAct.type, enemyAct.power, () => {
           afterAnimation(playerAct, enemyAct)
         })
       } else if (priorites[enemyAct.type] === undefined) {
-        player.board.useAnimation(playerAct.type, () => {
+        player.board.useAnimation(playerAct.type, enemyAct.power, () => {
           afterAnimation(playerAct, enemyAct)
         })
       }
       if (priorites[playerAct.type] === priorites[enemyAct.type]) {
-        parallelAnims(playerAct.type, enemyAct.type, () => {
+        parallelAnims(playerAct.type, playerAct.power, enemyAct.type, enemyAct.power, () => {
           afterAnimation(playerAct, enemyAct)
         })
       } else if (priorites[playerAct.type] > priorites[enemyAct.type]) {
-        queueAnims(playerAct.type, player, enemyAct.type, game.enemy, () => {
+        queueAnims(playerAct.type, playerAct.power, player, enemyAct.type, enemyAct.power, game.enemy, () => {
           afterAnimation(playerAct, enemyAct)
         })
       } else if (priorites[playerAct.type] < priorites[enemyAct.type]) {
-        queueAnims(enemyAct.type, game.enemy, playerAct.type, player, () => {
+        queueAnims(enemyAct.type, enemyAct.power, game.enemy, playerAct.type, playerAct.power, player, () => {
           afterAnimation(playerAct, enemyAct)
         })
       }
@@ -154,15 +170,19 @@ export default class extends Phaser.State {
 
     const playerBoard = new Board(this.game, 4)
     const player = new Player(game, playerBoard)
+    playerBoard.owner = player
     playerBoard.fill()
-    playerBoard.enableClickControl()
+    game.player = player
 
     game.enemy = createEnemy(currentEnemyIndex)
 
     game.shop = new Shop(game, player)
 
     const timer = new CountdownTimer(game, gameTurn);
-    timer.start()
+    setTimeout(() => {
+      playerBoard.enableClickControl()
+      timer.restore()
+    }, 1000)
 
   }
 

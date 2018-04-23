@@ -9,23 +9,17 @@ export default class CountdownTimer {
     this._leftSprite = game.add.tileSprite(
       0,
       game.world.centerY,
-      game.width/2, 40, 'timer'
+      1, 40, 'timer'
     )
     this._rightSprite = game.add.tileSprite(
       game.width,
       game.world.centerY,
-      game.width/2, 40, 'timer'
+      1, 40, 'timer'
     )
 
     this._leftSprite.anchor.setTo(0, 0.5)
     this._rightSprite.anchor.setTo(1, 0.5)
 
-    // this.sprite = game.add.tileSprite(
-    //   game.world.centerX,
-    //   game.world.centerY,
-    //   game.width, 40, 'timer'
-    // )
-    // this.sprite.anchor.setTo(0.5, 0.5)
   }
 
   start() {
@@ -43,10 +37,6 @@ export default class CountdownTimer {
     rightSpriteTween.start()
   }
   restore() {
-    // let timerTween = game.add
-    //   .tween(this.sprite)
-    //   .to({ width: game.width }, restoreTime, Phaser.Easing.Quintic.Out)
-
     let leftSpriteTween = game.add.tween(this._leftSprite)
       .to({ width: game.width / 2 }, restoreTime, Phaser.Easing.Quintic.In)
     let rightSpriteTween = game.add.tween(this._rightSprite)
