@@ -20,15 +20,19 @@ export default class HP {
     this._text.anchor.setTo(0.5)
 
     setTimeout(() => {
-      if (this.type === "defeated") this.game.shop.show()
-      this.hide()
+      if (this.type === "defeated") {
+        this.hide()
+        this.game.shop.show()
+      } else {
+        this.hide()
+        this.game.newEnemy()
+      }
     }, 2000)
   }
 
   hide() {
     this._text.visible = false
     this._text.destroy()
-    this.game.newEnemy()
   }
 
 };

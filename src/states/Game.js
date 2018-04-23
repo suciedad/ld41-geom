@@ -146,11 +146,13 @@ export default class extends Phaser.State {
     game.restart = () => {
       game.isEnd = false
       currentEnemyIndex = 0
-      game.enemy = createEnemy(currentEnemyIndex)
-      player.restoreHp()
-      player.board.restoreChips()
-      player.board.enableClickControl()
-      timer.restore()
+      game.enemy.animationDeath(() => {
+        game.enemy = createEnemy(currentEnemyIndex)
+        player.restoreHp()
+        player.board.restoreChips()
+        player.board.enableClickControl()
+        timer.restore()
+      })
     }
 
     game.newEnemy = () => {

@@ -123,7 +123,17 @@ export default class Shop {
       fill: '#ffffff',
       smoothed: false
     })
-    rowGroup.plusValue = game.add.text(0, 0, `+3`, {
+    let abilPlusValue
+    if (abil === "attack") {
+      abilPlusValue = 3
+    }
+    if (abil === "defence") {
+      abilPlusValue = 2
+    }
+    if (abil === "heal") {
+      abilPlusValue = 1
+    }
+    rowGroup.plusValue = game.add.text(0, 0, `+${abilPlusValue}`, {
       font: '25px Bangers',
       fill: '#ffffff',
       smoothed: false
